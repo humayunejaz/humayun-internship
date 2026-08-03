@@ -1,122 +1,186 @@
-import { faEye, faHeart } from "@fortawesome/free-regular-svg-icons";
-import {
-  faShapes,
-  faTag,
-  faShoppingBag,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useEffect } from "react";
-import RecommendedItems from "../components/item/RecommendedItems";
 import { faEthereum } from "@fortawesome/free-brands-svg-icons";
-import { Link } from "react-router-dom";
+import { faShoppingBag } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import Skeleton from "../components/ui/Skeleton";
+import axios from "axios";
 
-export default function ItemPage() {
+export default function UserPage() {
+  const { id } = useParams();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [visible, setVisible] = useState(12);
+  const [sort, setSort] = useState("default")
+
+  const sortItems = [...(user?.items || [])].sort((a, b) => {
+    if (sort === "high") return parseFloat(b.price) - parseFloat(a.price)
+    if (sort === "low") return parseFloat(a.price) - parseFloat(b.price)
+  })
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    setUser(null);
+    setLoading(true);
+  }, [id]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const { data } = await axios.get(
+          `https://remote-internship-api-production.up.railway.app/user/${id}`,
+        );
+        setUser(data.data);
+      } catch (error) {
+        console.log("failed to fetch user", error.response?.data);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [id]);
+
+  const items = user?.items || [];
+
   return (
     <>
-      <section id="item-info">
-        <div className="container">
-          <div className="row item-page__row">
-            <div className="item-page__left">
-              <figure className="item-page__img__wrapper">
-                <div className="item-page__img__details">
-                  <FontAwesomeIcon
-                    icon={faEthereum}
-                    className="item-page__img__icon"
-                  />
-                  <div className="item-page__img__likes">
-                    <FontAwesomeIcon
-                      icon={faHeart}
-                      className="item-page__img__icon"
-                    />
-                    <span className="item-page__img__likes__text">11</span>
-                  </div>
-                </div>
+      <header
+        style={{
+          backgroundImage: user?.imageLink
+            ? `url(${user.imageLink})`
+            : undefined,
+        }}
+        id="user-header"
+      ></header>
+
+      <section id="user-info" data-oas="fade-up">
+        <div className="row">
+          <div className="user-info__wrapper">
+            <figure className="user-info__img__wrapper">
+              {loading || !user ? (
+                <Skeleton width="80px" height="80px" borderRadius="50%" />
+              ) : (
                 <img
-                  src="https://i.seadn.io/gcs/files/0a085499e0f3800321618af356c5d36b.png?auto=format&dpr=1&w=1000"
-                  alt=""
-                  className="item-page__img"
+                  src={user?.profilePicture}
+                  alt={user?.name}
+                  className="user-info__img"
                 />
-              </figure>
-            </div>
-            <div className="item-page__right">
-              <Link
-                to={"/collection"}
-                className="item-page__collection light-blue"
-              >
-                Meebits
-              </Link>
-              <h1 className="item-page__name">Meebit #18854</h1>
-              <span className="item-page__owner">
-                Owned by{" "}
-                <Link
-                  to={"/user"}
-                  className="light-blue item-page__owner__link"
-                >
-                  shilpixels
-                </Link>
-              </span>
-              <div className="item-page__details">
-                <div className="item-page__detail">
-                  <FontAwesomeIcon
-                    icon={faEye}
-                    className="item-page__detail__icon"
-                  />
-                  <span className="item-page__detail__text">324 views</span>
-                </div>
-                <div className="item-page__detail">
-                  <FontAwesomeIcon
-                    icon={faHeart}
-                    className="item-page__detail__icon"
-                  />
-                  <span className="item-page__detail__text">11 favorites</span>
-                </div>
-                <div className="item-page__detail">
-                  <FontAwesomeIcon
-                    icon={faShapes}
-                    className="item-page__detail__icon"
-                  />
-                  <span className="item-page__detail__text">PFPs</span>
-                </div>
-              </div>
-              <div className="item-page__sale">
-                <div className="item-page__sale__header">
-                  <div className="green-pulse"></div>
-                  <span>Sale ends in 2h 30m 56s</span>
-                </div>
-                <div className="item-page__sale__body">
-                  <span className="item-page__sale__label">Current price</span>
-                  <div className="item-page__sale__price">
-                    <span className="item-page__sale__price__eth">100 ETH</span>
-                    <span className="item-page__sale__price__dollars">
-                      $314,884.00
+              )}
+            </figure>
+            {loading || !user ? (
+              <>
+                <Skeleton width="160px" height="2rem" borderRadius="6px" />
+                <Skeleton width="200px" height="1rem" borderRadius="4px" />
+              </>
+            ) : (
+              <>
+                <h1 className="user-info__name">{user.name}</h1>
+                <div className="user-info__details">
+                  <span className="user-info__wallet">
+                    <FontAwesomeIcon
+                      icon={faEthereum}
+                      className="user-info__wallet__icon"
+                    />
+                    <span className="user-info__wallet__data">
+                      {user.walletCode}
                     </span>
-                  </div>
-                  <div className="item-page__sale__buttons">
-                    <div className="item-page__sale__buy">
-                      <button className="item-page__sale__buy__button disabled">
-                        Buy now
-                      </button>
-                      <button className="item-page__sale__buy__icon disabled">
-                        <FontAwesomeIcon icon={faShoppingBag} />
-                      </button>
-                    </div>
-                    <button className="item-page__sale__offer disabled">
-                      <FontAwesomeIcon icon={faTag} />
-                      Make offer
-                    </button>
-                  </div>
+                  </span>
+                  <span className="user-info__year">
+                    <span className="user-info__year__data">
+                      Joined {user.creationDate}
+                    </span>
+                  </span>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
       </section>
 
-      <RecommendedItems />
+      <section id="user-items">
+        <div className="row user-items__row">
+          <div className="user-items__header">
+            <div className="user-items__header__left">
+              <span className="user-items__header__text">{items.length} items</span>
+            </div>
+            <select className="user-items__header__sort" value={sort} onChange={(e) => {setSort (e.target.value); setVisible(12)}}>
+              <option value="default">Default</option>
+              <option value="high">Price high to low</option>
+              <option value="low">Price low to high</option>
+            </select>
+          </div>
+          <div className="user-items__body">
+            {loading
+              ? new Array(12).fill(0).map((_, i) => (
+                  <div className="item-column" key={i}>
+                    <div className="item">
+                      <figure className="item__img__wrapper">
+                        <Skeleton
+                          width="100%"
+                          height="200px"
+                          borderRadius="12px"
+                        />
+                      </figure>
+                      <div className="item__details">
+                        <Skeleton
+                          width="80%"
+                          height="1rem"
+                          borderRadius="4px"
+                        />
+                        <Skeleton
+                          width="50%"
+                          height="1rem"
+                          borderRadius="4px"
+                        />
+                        <Skeleton
+                          width="60%"
+                          height="0.8rem"
+                          borderRadius="4px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              : sortItems.slice(0, visible).map((item) => (
+                  <div className="item-column" key={item.itemId}>
+                    <Link to={`/item/${item.itemId}`} className="item">
+                      <figure className="item__img__wrapper">
+                        <img
+                          src={item.imageLink}
+                          alt={item.title}
+                          className="item__img"
+                        />
+                      </figure>
+                      <div className="item__details">
+                        <span className="item__details__name">
+                          {item.title}
+                        </span>
+                        <span className="item__details__price">{parseFloat(item.price).toFixed(2)} ETH</span>
+                        <span className="item__details__last-sale">
+                          Last sale: {parseFloat(item.lastSale).toFixed(2)} ETH
+                        </span>
+                      </div>
+                      <div className="item__see-more" href="#">
+                        <button className="item__see-more__button">
+                          See More
+                        </button>
+                        <div className="item__see-more__icon">
+                          <FontAwesomeIcon icon={faShoppingBag} />
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+          </div>
+        </div>
+        {!loading && visible < sortItems.length && (
+          <button className="collection-page__button" onClick={() => setVisible((prev) => prev + 6)}>Load more</button>
+        )}
+      </section>
     </>
   );
 }
