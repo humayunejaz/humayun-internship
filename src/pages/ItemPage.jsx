@@ -11,8 +11,6 @@ import { faEthereum } from "@fortawesome/free-brands-svg-icons";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import Skeleton from "../components/ui/Skeleton";
-import AOS from "aos";
-import "aos/dist/aos.css";
 
 export default function ItemPage() {
   const { id } = useParams();
@@ -24,11 +22,6 @@ export default function ItemPage() {
     seconds: 56,
   });
   const endTimeRef = useRef(null);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    AOS.init({ duration: 800, once: true });
-  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -75,7 +68,7 @@ export default function ItemPage() {
 
   return (
     <>
-      <section id="item-info" data-aos="fade-up">
+      <section id="item-info">
         <div className="container">
           <div className="row item-page__row">
             <div className="item-page__left">
@@ -86,25 +79,23 @@ export default function ItemPage() {
                     className="item-page__img__icon"
                   />
                   <div className="item-page__img__likes">
-                    <FontAwesomeIcon
-                      icon={faHeart}
-                      className="item-page__img__icon"
-                    />
-                    <span className="item-page__img__likes__text">
-                      {loading ? (
-                        <Skeleton
-                          width="20px"
-                          height="1rem"
-                          borderRadius="4px"
+                    {loading ? (
+                      <Skeleton width="40px" height="1rem" borderRadius="4px" />
+                    ) : (
+                      <>
+                        <FontAwesomeIcon
+                          icon={faHeart}
+                          className="item-page__img__icon"
                         />
-                      ) : (
-                        (item?.favorites ?? 0)
-                      )}
-                    </span>
+                        <span className="item-page__img__likes__text">
+                          {item?.favorites ?? 0}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
                 {loading ? (
-                  <Skeleton width="100%" height="400px" borderRadius="12px" />
+                  <Skeleton width="100%" height="100%" borderRadius="0px" />
                 ) : (
                   <img
                     src={item.imageLink}
@@ -117,10 +108,56 @@ export default function ItemPage() {
             <div className="item-page__right">
               {loading ? (
                 <>
-                  <Skeleton width="120px" height="1rem" borderRadius="4px" />
-                  <Skeleton width="250px" height="2rem" borderRadius="6px" />
-                  <Skeleton width="150px" height="1rem" borderRadius="4px" />
-                  <Skeleton width="100%" height="160px" borderRadius="12px" />
+                  <div style={{ marginBottom: "20px" }}>
+                    <Skeleton width="120px" height="1rem" borderRadius="4px" />
+                  </div>
+                  <Skeleton width="300px" height="2rem" borderRadius="6px" />
+                  <div style={{ marginTop: "4px" }}>
+                    <Skeleton width="150px" height="1rem" borderRadius="4px" />
+                  </div>
+                  <div className="item-page__details">
+                    <Skeleton width="80px" height="1rem" borderRadius="4px" />
+                    <Skeleton width="80px" height="1rem" borderRadius="4px" />
+                    <Skeleton width="100px" height="1rem" borderRadius="4px" />
+                  </div>
+                  <div className="item-page__sale">
+                    <div className="item-page__sale__header">
+                      <Skeleton width="60%" height="1rem" borderRadius="4px" />
+                    </div>
+                    <div
+                      className="item-page__sale__body"
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "12px",
+                      }}
+                    >
+                      <Skeleton
+                        width="80px"
+                        height="0.8rem"
+                        borderRadius="4px"
+                      />
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                        }}
+                      >
+                        <Skeleton
+                          width="120px"
+                          height="1.5rem"
+                          borderRadius="4px"
+                        />
+                        <Skeleton
+                          width="80px"
+                          height="1rem"
+                          borderRadius="4px"
+                        />
+                      </div>
+                      <Skeleton width="100%" height="48px" borderRadius="8px" />
+                    </div>
+                  </div>
                 </>
               ) : (
                 <>
@@ -173,9 +210,8 @@ export default function ItemPage() {
                     <div className="item-page__sale__header">
                       <div className="green-pulse"></div>
                       <span>
-                        Sale ends in {String(timeLeft.hours).padStart(2, "0")}h{" "}
-                        {String(timeLeft.minutes).padStart(2, "0")}m{" "}
-                        {String(timeLeft.seconds).padStart(2, "0")}s
+                        Sale ends in {timeLeft.hours}h {timeLeft.minutes}m{" "}
+                        {timeLeft.seconds}s
                       </span>
                     </div>
                     <div className="item-page__sale__body">
@@ -186,7 +222,7 @@ export default function ItemPage() {
                         <span className="item-page__sale__price__eth">
                           {parseFloat(item.ethPrice).toFixed(2)} ETH
                         </span>
-                        <span className="item-page__sale__price__usd">
+                        <span className="item-page__sale__price__dollars">
                           {item.usdPrice}
                         </span>
                       </div>
@@ -212,12 +248,7 @@ export default function ItemPage() {
           </div>
         </div>
       </section>
-      <div data-aos="fade-up" data-aos-delay="100">
-        <RecommendedItems
-          collectionId={item?.collectionId}
-          currentItemId={id}
-        />
-      </div>
+      <RecommendedItems collectionId={item?.collectionId} currentItemId={id} />
     </>
   );
 }
